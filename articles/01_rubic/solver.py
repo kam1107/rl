@@ -24,7 +24,7 @@ log = logging.getLogger("solver")
 
 DataPoint = collections.namedtuple("DataPoint", field_names=(
     'start_dt', 'stop_dt', 'duration', 'depth', 'scramble', 'is_solved', 'solve_steps', 'sol_len_naive', 'sol_len_bfs',
-    'depth_max', 'depth_mean'
+    'depth_max', 'depth_mean', 'solution'
 ))
 
 
@@ -76,7 +76,8 @@ def gather_data(cube_env, net, max_seconds, max_steps, max_depth, samples_per_de
                 data_point = DataPoint(start_dt=start_dt, stop_dt=stop_dt, duration=duration, depth=depth,
                                        scramble=scramble, is_solved=is_solved, solve_steps=len(tree),
                                        sol_len_naive=sol_len_naive, sol_len_bfs=sol_len_bfs,
-                                       depth_max=tree_depth_stats['max'], depth_mean=tree_depth_stats['mean'])
+                                       depth_max=tree_depth_stats['max'], depth_mean=tree_depth_stats['mean'], 
+                                       solution=solution)
                 result.append(data_point)
                 if is_solved:
                     solved_count += 1
@@ -91,7 +92,7 @@ def save_output(data, output_file):
     with open(output_file, "wt", encoding='utf-8') as fd:
         writer = csv.writer(fd)
         writer.writerow(['start_dt', 'stop_dt', 'duration', 'depth', 'scramble', 'is_solved', 'solve_steps',
-                         'sol_len_naive', 'sol_len_bfs', 'tree_depth_max', 'tree_depth_mean'])
+                         'sol_len_naive', 'sol_len_bfs', 'tree_depth_max', 'tree_depth_mean', 'solution'])
         for dp in data:
             writer.writerow([
                 dp.start_dt.isoformat(),
@@ -104,7 +105,8 @@ def save_output(data, output_file):
                 dp.sol_len_naive,
                 dp.sol_len_bfs,
                 dp.depth_max,
-                dp.depth_mean
+                dp.depth_mean,
+                dp.solution
             ])
 
 
