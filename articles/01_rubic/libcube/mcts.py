@@ -29,7 +29,7 @@ class MCTS:
         # correspond to N_s(a) in the paper
         self.act_counts = collections.defaultdict(lambda: np.zeros(shape, dtype=np.uint32))
         # correspond to W_s(a)
-        self.val_maxes = collections.defaultdict(lambda: np.zeros(shape, dtype=np.float32)+float("-inf"))
+        self.val_maxes = collections.defaultdict(lambda: np.zeros(shape, dtype=np.float32))
         # correspond to P_s(a)
         self.prob_actions = {}
         # correspond to L_s(a)

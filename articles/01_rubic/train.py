@@ -25,6 +25,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--ini", required=True, help="Ini file to use for this run")
     parser.add_argument("-n", "--name", required=True, help="Name of the run")
+    parser.add_argument("-u", "--update", required=False, help="target net update frequency")
     args = parser.parse_args()
     config = conf.Config(args.ini)
     device = torch.device("cuda" if config.train_cuda else "cpu")
@@ -40,7 +41,8 @@ if __name__ == "__main__":
     value_targets_method = model.ValueTargetsMethod(config.train_value_targets_method)
 
     net = model.Net(cube_env.encoded_shape, len(cube_env.action_enum)).to(device)
-    print(net)
+    net_target = model.Net(cube_env.encoded_shape, len(cube_env.action_enum)).to(device)
+    print(net) 
     opt = optim.Adam(net.parameters(), lr=config.train_learning_rate)
     sched = scheduler.StepLR(opt, 1, gamma=config.train_lr_decay_gamma) if config.train_lr_decay_enabled else None
 
@@ -64,7 +66,7 @@ if __name__ == "__main__":
 
         step_idx += 1
         x_t, weights_t, y_policy_t, y_value_t = model.sample_batch(
-            scramble_buf, net, device, config.train_batch_size, value_targets_method)
+            scramble_buf, net_target, device, config.train_batch_size, value_targets_method)
 
         opt.zero_grad()
         policy_out_t, value_out_t = net(x_t)
@@ -83,6 +85,9 @@ if __name__ == "__main__":
         loss_t = value_loss_t + policy_loss_t
         loss_t.backward()
         opt.step()
+
+        if step_idx % args.update == 0:
+            net_target.load_state_dict(net.state_dict())
 
         # save data
         buf_mean_values.append(value_out_t.mean().item())
