@@ -25,7 +25,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--ini", required=True, help="Ini file to use for this run")
     parser.add_argument("-n", "--name", required=True, help="Name of the run")
-    parser.add_argument("-u", "--update", required=False, help="target net update frequency")
+    parser.add_argument("-u", "--update", type=int, required=False, help="target net update frequency")
     args = parser.parse_args()
     config = conf.Config(args.ini)
     device = torch.device("cuda" if config.train_cuda else "cpu")

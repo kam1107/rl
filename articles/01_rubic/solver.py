@@ -77,7 +77,7 @@ def gather_data(cube_env, net, max_seconds, max_steps, max_depth, samples_per_de
                                        scramble=scramble, is_solved=is_solved, solve_steps=len(tree),
                                        sol_len_naive=sol_len_naive, sol_len_bfs=sol_len_bfs,
                                        depth_max=tree_depth_stats['max'], depth_mean=tree_depth_stats['mean'], 
-                                       solution=solution)
+                                       solution=tree.find_solution())
                 result.append(data_point)
                 if is_solved:
                     solved_count += 1
