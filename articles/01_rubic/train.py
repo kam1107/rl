@@ -26,6 +26,7 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--ini", required=True, help="Ini file to use for this run")
     parser.add_argument("-n", "--name", required=True, help="Name of the run")
     parser.add_argument("-u", "--update", type=int, required=False, help="target net update frequency")
+    parser.add_argument("-e", "--epsilon", type=float, required=False, help="threshold for updating target net")
     args = parser.parse_args()
     config = conf.Config(args.ini)
     device = torch.device("cuda" if config.train_cuda else "cpu")
@@ -65,9 +66,12 @@ if __name__ == "__main__":
             writer.add_scalar("lr", sched.get_lr()[0], step_idx)
 
         step_idx += 1
+        # y_policy_t = best action
+        # y_value_t = max(v(child) + reward(current_to_child))
         x_t, weights_t, y_policy_t, y_value_t = model.sample_batch(
             scramble_buf, net_target, device, config.train_batch_size, value_targets_method)
 
+        # replay buffer: (s_cur, a, r, s_nxt)
         opt.zero_grad()
         policy_out_t, value_out_t = net(x_t)
         value_out_t = value_out_t.squeeze(-1)
@@ -86,9 +90,6 @@ if __name__ == "__main__":
         loss_t.backward()
         opt.step()
 
-        if step_idx % args.update == 0:
-            net_target.load_state_dict(net.state_dict())
-
         # save data
         buf_mean_values.append(value_out_t.mean().item())
         buf_policy_loss.append(policy_loss_t.item())
@@ -97,6 +98,9 @@ if __name__ == "__main__":
         buf_loss_raw.append(loss_raw_t.item())
         buf_value_loss_raw.append(value_loss_raw_t.item())
         buf_policy_loss_raw.append(policy_loss_raw_t.item())
+
+        if step_idx % args.update == 0 and loss_t.item() < args.epsilon:
+            net_target.load_state_dict(net.state_dict())
 
         if config.train_report_batches is not None and step_idx % config.train_report_batches == 0:
             m_policy_loss = np.mean(buf_policy_loss)

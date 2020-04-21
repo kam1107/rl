@@ -89,7 +89,7 @@ def make_scramble_buffer(cube_env, buf_size, scramble_depth):
         result.append((enc_s, depth, cube_env.is_goal(s), enc_states, goals))
     return result
 
-
+# this behaves like replay buffer
 def sample_batch(scramble_buffer, net, device, batch_size, value_targets):
     """
     Sample batch of given size from scramble buffer produced by make_scramble_buffer
