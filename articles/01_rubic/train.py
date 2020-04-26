@@ -99,7 +99,7 @@ if __name__ == "__main__":
         buf_value_loss_raw.append(value_loss_raw_t.item())
         buf_policy_loss_raw.append(policy_loss_raw_t.item())
 
-        if step_idx % args.update == 0 and loss_t.item() < args.epsilon:
+        if step_idx % args.update == 0:
             net_target.load_state_dict(net.state_dict())
 
         if config.train_report_batches is not None and step_idx % config.train_report_batches == 0:
@@ -144,6 +144,7 @@ if __name__ == "__main__":
                 best_loss = m_loss
 
         if step_idx % config.push_scramble_buffer_iters == 0:
+           # scramble_buf.clear()
             scramble_buf.extend(model.make_scramble_buffer(cube_env, config.train_batch_size,
                                                            config.train_scramble_depth))
             log.info("Pushed new data in scramble buffer, new size = %d", len(scramble_buf))

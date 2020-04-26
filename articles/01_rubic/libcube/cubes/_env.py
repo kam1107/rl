@@ -88,6 +88,11 @@ class CubeEnv:
                 res = (depth+1, state, inv_action)
             else:
                 res = (depth+1, state)
+                # check repeat states
+                for p in result:
+                    if res[1] == p[1]:
+                        if p[0] < res[0]:
+                            res = p
             result.append(res)
         return result
 
